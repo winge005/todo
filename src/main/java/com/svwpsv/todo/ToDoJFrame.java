@@ -5,12 +5,15 @@
 package com.svwpsv.todo;
 
 import java.awt.Dimension;
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -18,7 +21,10 @@ import javax.swing.ImageIcon;
  */
 public class ToDoJFrame extends javax.swing.JFrame {
 
-    private List<Todo> todos = new ArrayList<>();
+    private List<Todo> todos;
+    private List<HourScheme> hourSchemes;
+       
+    
     /**
      * Creates new form ToDoJFrame
      */
@@ -27,11 +33,35 @@ public class ToDoJFrame extends javax.swing.JFrame {
         
         Dimension d = new Dimension(800,600 );
         this.setSize(d);
+        setLocationRelativeTo(null);
+        
+        jSpinner1.setValue(LocalDate.now().getDayOfMonth());
+        jSpinner4.setValue(LocalDate.now().getDayOfMonth());
+        jSpinner2.setValue(LocalDate.now().getMonthValue());
+        jSpinner5.setValue(LocalDate.now().getMonthValue());
+        jSpinner3.setValue(LocalDate.now().getYear());
+        jSpinner6.setValue(LocalDate.now().getYear());
         
         jLabel4.setIcon(new ImageIcon("D:\\develop\\java\\NetBeansProjects\\todo\\delete.png"));
-        final DefaultListModel model = new DefaultListModel();
+        jLabel13.setIcon(new ImageIcon("D:\\develop\\java\\NetBeansProjects\\todo\\delete.png"));
+        DefaultListModel model = new DefaultListModel();
         jList1.setModel(model);
+        model = new DefaultListModel();
+        jList2.setModel(model);
         resetSpinners();
+        
+        todos = IO.deSerialzeTodos();
+        if (todos == null){
+            todos = new ArrayList<>();
+        }
+        
+        hourSchemes = IO.deSerialzeHours();
+        if (hourSchemes == null){
+            hourSchemes = new ArrayList<>();
+        }
+        
+        showTodos();
+        showHours();
     }
     
     private void resetSpinners(){
@@ -55,6 +85,13 @@ public class ToDoJFrame extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList<>();
         jLabel4 = new javax.swing.JLabel();
+        jTextField5 = new javax.swing.JTextField();
+        jTextField6 = new javax.swing.JTextField();
+        jLabel8 = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
+        jTextField7 = new javax.swing.JTextField();
+        jButtonSave1 = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -68,15 +105,21 @@ public class ToDoJFrame extends javax.swing.JFrame {
         jPanel3 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jList2 = new javax.swing.JList<>();
-        jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
+        jButton2 = new javax.swing.JButton();
+        jSpinner7 = new javax.swing.JSpinner();
+        jSpinner8 = new javax.swing.JSpinner();
+        jLabel12 = new javax.swing.JLabel();
+        jSpinner9 = new javax.swing.JSpinner();
+        jLabel13 = new javax.swing.JLabel();
+        jPanel4 = new javax.swing.JPanel();
         jLabel7 = new javax.swing.JLabel();
         jSpinner4 = new javax.swing.JSpinner();
         jSpinner5 = new javax.swing.JSpinner();
         jSpinner6 = new javax.swing.JSpinner();
-        jTextField3 = new javax.swing.JTextField();
-        jTextField4 = new javax.swing.JTextField();
-        jButton2 = new javax.swing.JButton();
+        jLabel14 = new javax.swing.JLabel();
+        jButtonSave2 = new javax.swing.JButton();
+        jLabelError = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
@@ -89,9 +132,42 @@ public class ToDoJFrame extends javax.swing.JFrame {
         jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         jList1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jList1.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                jList1ValueChanged(evt);
+            }
+        });
         jScrollPane1.setViewportView(jList1);
 
         jLabel4.setToolTipText("Delete");
+        jLabel4.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel4MouseClicked(evt);
+            }
+        });
+
+        jTextField5.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+
+        jTextField6.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+
+        jLabel8.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jLabel8.setText("Name");
+
+        jLabel9.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jLabel9.setText("Description");
+
+        jLabel10.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jLabel10.setText("Date");
+
+        jTextField7.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+
+        jButtonSave1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jButtonSave1.setText("Save");
+        jButtonSave1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonSave1ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -99,10 +175,30 @@ public class ToDoJFrame extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 596, Short.MAX_VALUE)
-                .addGap(18, 18, 18)
-                .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jButtonSave1)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel9)
+                                    .addComponent(jLabel10))
+                                .addGap(30, 30, 30)
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(jTextField6, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
+                                    .addComponent(jTextField5)
+                                    .addComponent(jTextField7))))
+                        .addGap(63, 63, 63))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(jLabel8)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 435, Short.MAX_VALUE)
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addContainerGap())))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -111,7 +207,21 @@ public class ToDoJFrame extends javax.swing.JFrame {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(177, Short.MAX_VALUE))
+                .addGap(28, 28, 28)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel8)
+                    .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel9)
+                    .addComponent(jTextField6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel10)
+                    .addComponent(jTextField7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(jButtonSave1)
+                .addContainerGap(66, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("ToDo", jPanel2);
@@ -125,13 +235,13 @@ public class ToDoJFrame extends javax.swing.JFrame {
         jLabel2.setText("Description");
 
         jSpinner1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jSpinner1.setModel(new javax.swing.SpinnerNumberModel(0, 0, 31, 1));
+        jSpinner1.setModel(new javax.swing.SpinnerNumberModel(1, 1, 31, 1));
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         jLabel3.setText("Date (d-m-y)");
 
         jSpinner2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jSpinner2.setModel(new javax.swing.SpinnerNumberModel(0, 0, 12, 1));
+        jSpinner2.setModel(new javax.swing.SpinnerNumberModel(1, 1, 12, 1));
 
         jSpinner3.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         jSpinner3.setModel(new javax.swing.SpinnerNumberModel(2024, 2024, null, 1));
@@ -172,7 +282,7 @@ public class ToDoJFrame extends javax.swing.JFrame {
                                     .addComponent(jSpinner2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(jSpinner3, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE))))))
-                .addContainerGap(179, Short.MAX_VALUE))
+                .addContainerGap(18, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -193,7 +303,7 @@ public class ToDoJFrame extends javax.swing.JFrame {
                     .addComponent(jSpinner3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(35, 35, 35)
                 .addComponent(jButtonSave)
-                .addContainerGap(188, Short.MAX_VALUE))
+                .addContainerGap(251, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("New ToDo", jPanel1);
@@ -206,26 +316,15 @@ public class ToDoJFrame extends javax.swing.JFrame {
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
+        jList2.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                jList2ValueChanged(evt);
+            }
+        });
         jScrollPane2.setViewportView(jList2);
 
-        jLabel5.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jLabel5.setText("Name");
-
         jLabel6.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jLabel6.setText("Description");
-
-        jLabel7.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jLabel7.setText("Date (d-m-y)");
-
-        jSpinner4.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-
-        jSpinner5.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-
-        jSpinner6.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-
-        jTextField3.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-
-        jTextField4.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jLabel6.setText("Normal Hours");
 
         jButton2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         jButton2.setText("Save");
@@ -235,58 +334,137 @@ public class ToDoJFrame extends javax.swing.JFrame {
             }
         });
 
+        jSpinner7.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+
+        jSpinner8.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+
+        jLabel12.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jLabel12.setText("Low");
+
+        jSpinner9.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+
+        jLabel13.setToolTipText("Delete");
+        jLabel13.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel13MouseClicked(evt);
+            }
+        });
+
+        jLabel7.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jLabel7.setText("Date (d-m-y)");
+
+        jSpinner4.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jSpinner4.setModel(new javax.swing.SpinnerNumberModel(1, 1, null, 1));
+
+        jSpinner5.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jSpinner5.setModel(new javax.swing.SpinnerNumberModel(1, 1, 12, 1));
+
+        jSpinner6.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jSpinner6.setModel(new javax.swing.SpinnerNumberModel(2024, 2024, null, 1));
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addComponent(jLabel7)
+                .addGap(36, 36, 36)
+                .addComponent(jSpinner4, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSpinner5, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSpinner6, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(124, Short.MAX_VALUE))
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jSpinner5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jSpinner6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel7)
+                        .addComponent(jSpinner4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jLabel14.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jLabel14.setText("High");
+
+        jButtonSave2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jButtonSave2.setText("Update");
+        jButtonSave2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonSave2ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGap(26, 26, 26)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                .addContainerGap(19, Short.MAX_VALUE)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel5)
-                    .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addComponent(jLabel6)
+                                .addGap(30, 30, 30)
+                                .addComponent(jSpinner7, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel12)
+                                    .addComponent(jLabel14))
+                                .addGap(87, 87, 87)
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(jSpinner8, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE)
+                                    .addComponent(jSpinner9)))
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 363, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel13, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addContainerGap())
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                        .addComponent(jButtonSave2)
+                        .addGap(18, 18, 18)
                         .addComponent(jButton2)
-                        .addGroup(jPanel3Layout.createSequentialGroup()
-                            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLabel7)
-                                .addComponent(jLabel6))
-                            .addGap(30, 30, 30)
-                            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, 370, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 370, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                                    .addComponent(jSpinner4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(78, 78, 78)
-                                    .addComponent(jSpinner5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(jSpinner6, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(163, Short.MAX_VALUE))
+                        .addGap(135, 135, 135))))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addGap(33, 33, 33)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jButton2)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel13, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jSpinner7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel6))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel12)
+                    .addComponent(jSpinner9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jSpinner8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel14))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel5)
-                    .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel6)
-                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel7)
-                    .addComponent(jSpinner5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jSpinner4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jSpinner6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(67, 67, 67))
+                    .addComponent(jButton2)
+                    .addComponent(jButtonSave2))
+                .addContainerGap(7, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Hours", jPanel3);
+
+        jLabelError.setText("jLabel5");
 
         jMenuBar1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
@@ -304,15 +482,16 @@ public class ToDoJFrame extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(65, 65, 65)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 669, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(33, Short.MAX_VALUE))
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 508, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(87, Short.MAX_VALUE))
+            .addComponent(jLabelError, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(25, 25, 25)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 404, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(224, Short.MAX_VALUE))
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 467, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
+                .addComponent(jLabelError))
         );
 
         jTabbedPane1.getAccessibleContext().setAccessibleName("");
@@ -320,52 +499,307 @@ public class ToDoJFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private String toStringDate(LocalDate ld){
+        int day = ld.getDayOfMonth();
+        int month = ld.getMonthValue();
+        int year = ld.getYear();
+        
+        String dayStr = day < 10? "0" + day: "" + day;
+        String monthStr = month < 10? "0" + month: "" + month;
+        
+        return dayStr + "-" + monthStr + "-" + year;
+    }
+    
+    private void showTodos() {
+        DefaultListModel dlm =  (DefaultListModel)jList1.getModel();
+        dlm.clear();
+        
+        Collections.sort(todos, new TodoDateComparor());
+        
+        todos.forEach(t -> {
+            dlm.add(dlm.getSize(), toStringDate(t.getDate()) + " - " + t.getName());
+        });
+        jLabelError.setText("");
+    }
+    
+    private void showHours() {
+        DefaultListModel dlm =  (DefaultListModel)jList2.getModel();
+        dlm.clear();
+        
+        Collections.sort(hourSchemes, new HourSchemaDateComparor());
+        
+        hourSchemes.forEach(t -> {
+            dlm.add(dlm.getSize(), toStringDate(t.getDate()) + " - N:" + t.getNormalHours() + " Low:" + t.getLowHours() + " High:" + t.getHighHours());
+        });
+        jLabelError.setText("");
+    }
+    
     private void jButtonSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSaveActionPerformed
         if (jTextField1.getText().length() == 0) {
+            jLabelError.setText("Mandatory field [name] is empty");
             jTextField1.requestFocus();
             return;
         }
         
         if (jTextField2.getText().length() == 0) {
+            jLabelError.setText("Mandatory field [description is empty");
             jTextField2.requestFocus();
             return;
         }
         
         if (jSpinner1.getValue().equals("0")) {
+            jLabelError.setText("Mandatory field [day] is empty");
             jSpinner1.requestFocus();
             return;
         }
         
         if (jSpinner2.getValue().equals("0")) {
+            jLabelError.setText("Mandatory field [month] is empty");
             jSpinner2.requestFocus();
             return;
         }
         
         if (jSpinner3.getValue().equals("0")) {
+            jLabelError.setText("Mandatory field [year] is empty");
             jSpinner3.requestFocus();
             return;
         }
         
-        LocalDate ld = LocalDate.of(Integer.parseInt(jSpinner3.getValue().toString()), Integer.parseInt(jSpinner2.getValue().toString()), Integer.parseInt(jSpinner1.getValue().toString()));
-        Todo todo = new Todo();
-        todo.setId(UUID.randomUUID().toString());
-        todo.setName(jTextField1.getText());
-        todo.setDescription(jTextField2.getText());
-        todo.setDate(ld);
-        todos.add(todo);
+        try {
+            LocalDate ld = LocalDate.of(Integer.parseInt(jSpinner3.getValue().toString()), Integer.parseInt(jSpinner2.getValue().toString()), Integer.parseInt(jSpinner1.getValue().toString()));
+            Todo todo = new Todo();
+            todo.setId(UUID.randomUUID().toString());
+            todo.setName(jTextField1.getText());
+            todo.setDescription(jTextField2.getText());
+            todo.setDate(ld);
+            todos.add(todo);
         
-        DefaultListModel dlm =  (DefaultListModel)jList1.getModel();
-        dlm.add(dlm.getSize(), todo.getId() + " - " + todo.getName());
-        resetSpinners();
-        jTextField1.setText("");
-        jTextField2.setText("");
-        jTextField3.setText("");
+            resetSpinners();
+            jTextField1.setText("");
+            jTextField2.setText("");
+            IO.serializeTodos(todos);
+            showTodos();
+        } catch(DateTimeException dte){
+            jLabelError.setText("The selected date is not valid");
+        }
     }//GEN-LAST:event_jButtonSaveActionPerformed
 
+    private void jList1ValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_jList1ValueChanged
+                // TODO add your handling code here:
+                if (jList1.getSelectedIndex() != -1){
+                    Todo selected = todos.get(jList1.getSelectedIndex());
+                    jTextField5.setText(selected.getName());
+                    jTextField6.setText(selected.getDescription());
+                    jTextField7.setText(toStringDate(selected.getDate()));
+                }
+    }//GEN-LAST:event_jList1ValueChanged
+
+    private void jButtonSave1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSave1ActionPerformed
+        if (jTextField5.getText().length() == 0) {
+            jLabelError.setText("Mandatory field [name] is empty");
+            jTextField5.requestFocus();
+            return;
+        }
+        
+        if (jTextField6.getText().length() == 0) {
+            jLabelError.setText("Mandatory field [description] is empty");
+            jTextField6.requestFocus();
+            return;
+        }
+        
+        if (jTextField7.getText().length() == 0) {
+            jLabelError.setText("Mandatory field [date] is empty");
+            jTextField7.requestFocus();
+            return;
+        }
+        
+        int count = 0;
+ 
+        for (int i = 0; i < jTextField7.getText().length(); i++) {
+            if (jTextField7.getText().charAt(i) == '-') {
+                count++;
+            }
+        }
+        if (count != 2) {
+            jLabelError.setText("[date] is not correct");
+            jTextField7.requestFocus();
+        }
+                
+        String[] dmy = jTextField7.getText().split("-");
+        
+        int day = Integer.parseInt(dmy[0]);
+        int month = Integer.parseInt(dmy[1]);
+        int year = Integer.parseInt(dmy[2]);
+        
+        if(day <1 || month < 1 || year < 2024){
+            jLabelError.setText("[year] can not be less then 2024");
+            jTextField7.requestFocus();
+        }
+        
+        try {
+            LocalDate ld = LocalDate.of(year, month, day); 
+            Todo todo = todos.get(jList1.getSelectedIndex());
+            todo.setName(jTextField5.getText());
+            todo.setDescription(jTextField6.getText());
+            todo.setDate(ld);
+            todos.remove(jList1.getSelectedIndex());
+            todos.add(todo);
+            IO.serializeTodos(todos);
+            jTextField5.setText("");
+            jTextField6.setText("");
+            jTextField7.setText("");
+            jList1.clearSelection();
+            showTodos();
+        } catch(DateTimeException dte){
+            jLabelError.setText("not a valid date!");
+            jTextField7.requestFocus();
+        }
+    }//GEN-LAST:event_jButtonSave1ActionPerformed
+
+    private void jLabel4MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel4MouseClicked
+        if (jList1.getSelectedIndex() > -1) {
+            int response = JOptionPane.showConfirmDialog(this, "Are you sure to delete this item", "Alert", JOptionPane.YES_NO_OPTION);
+            if (response == JOptionPane.YES_OPTION) {
+                todos.remove(jList1.getSelectedIndex());
+                IO.serializeTodos(todos);
+                showTodos();
+            }
+        }
+    }//GEN-LAST:event_jLabel4MouseClicked
+
+    private void jLabel13MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel13MouseClicked
+        if (jList2.getSelectedIndex() > -1) {
+            hourSchemes.remove(jList2.getSelectedIndex());
+            IO.serializeHours(hourSchemes);
+            showHours();
+        }
+    }//GEN-LAST:event_jLabel13MouseClicked
+
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        // TODO add your handling code here:
+        //jspinner4 5 6// TODO add your handling code here:
+        if (jSpinner4.getValue().equals("0")) {
+            jLabelError.setText("Day can not be 0");
+            jSpinner4.requestFocus();
+            return;
+        }
+
+        if (jSpinner5.getValue().equals("0")) {
+            jLabelError.setText("Month can not be 0");
+            jSpinner5.requestFocus();
+            return;
+        }
+
+        if (jSpinner6.getValue().equals("0")) {
+            jLabelError.setText("Year can not be 0");
+            jSpinner6.requestFocus();
+            return;
+        }
+        
+        if (jSpinner7.getValue().equals("0") && jSpinner8.getValue().equals("0") && jSpinner9.getValue().equals("0")) {
+            jLabelError.setText("At least one must be filled Normal, Low or High");
+            if (jSpinner7.getValue().equals("0")) {
+                jSpinner7.requestFocus();    
+                return;
+            }
+            if (jSpinner8.getValue().equals("0")) {
+                jSpinner8.requestFocus();    
+                return;
+            }
+            if (jSpinner9.getValue().equals("0")) {
+                jSpinner9.requestFocus();    
+                return;
+            }
+        }
+        
+        try {
+            LocalDate ld = LocalDate.of(Integer.parseInt(jSpinner6.getValue().toString()), Integer.parseInt(jSpinner5.getValue().toString()), Integer.parseInt(jSpinner4.getValue().toString()));
+            
+            HourScheme hourScheme = new HourScheme();
+            hourScheme.setDate(ld);
+            hourScheme.setNormalHours(Integer.parseInt(jSpinner7.getValue().toString()));
+            hourScheme.setLowHours(Integer.parseInt(jSpinner9.getValue().toString()));
+            hourScheme.setHighHours(Integer.parseInt(jSpinner8.getValue().toString()));
+            
+            hourSchemes.add(hourScheme);
+            IO.serializeHours(hourSchemes);
+            showHours();
+        } catch(DateTimeException dte){
+            jLabelError.setText("Date is not correct");
+        }
+        
     }//GEN-LAST:event_jButton2ActionPerformed
 
+    private void jList2ValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_jList2ValueChanged
+        if (jList2.getSelectedIndex() > -1){
+            HourScheme hourScheme = hourSchemes.get(jList2.getSelectedIndex());
+            jSpinner4.setValue(hourScheme.getDate().getDayOfMonth());
+            jSpinner5.setValue(hourScheme.getDate().getMonthValue());
+            jSpinner6.setValue(hourScheme.getDate().getYear());
+            jSpinner7.setValue(hourScheme.getNormalHours());
+            jSpinner9.setValue(hourScheme.getLowHours());
+            jSpinner8.setValue(hourScheme.getHighHours());
+        }
+    }//GEN-LAST:event_jList2ValueChanged
+
+    private void jButtonSave2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSave2ActionPerformed
+        if (jList2.getSelectedIndex() == -1){
+            jLabelError.setText("Nothing selected to update");
+            return;
+        }
+        
+        if (jSpinner4.getValue().equals("0")) {
+            jLabelError.setText("Day can not be 0");
+            jSpinner4.requestFocus();
+            return;
+        }
+
+        if (jSpinner5.getValue().equals("0")) {
+            jLabelError.setText("Month can not be 0");
+            jSpinner5.requestFocus();
+            return;
+        }
+
+        if (jSpinner6.getValue().equals("0")) {
+            jLabelError.setText("Year can not be 0");
+            jSpinner6.requestFocus();
+            return;
+        }
+        
+        if (jSpinner7.getValue().equals("0") && jSpinner8.getValue().equals("0") && jSpinner9.getValue().equals("0")) {
+            jLabelError.setText("At least one must be filled Normal, Low or High");
+            if (jSpinner7.getValue().equals("0")) {
+                jSpinner7.requestFocus();    
+                return;
+            }
+            if (jSpinner8.getValue().equals("0")) {
+                jSpinner8.requestFocus();    
+                return;
+            }
+            if (jSpinner9.getValue().equals("0")) {
+                jSpinner9.requestFocus();    
+                return;
+            }
+        }
+        
+        try {
+            LocalDate ld = LocalDate.of(Integer.parseInt(jSpinner6.getValue().toString()), Integer.parseInt(jSpinner5.getValue().toString()), Integer.parseInt(jSpinner4.getValue().toString()));
+            
+            HourScheme hourScheme = new HourScheme();
+            hourScheme.setDate(ld);
+            hourScheme.setNormalHours(Integer.parseInt(jSpinner7.getValue().toString()));
+            hourScheme.setLowHours(Integer.parseInt(jSpinner9.getValue().toString()));
+            hourScheme.setHighHours(Integer.parseInt(jSpinner8.getValue().toString()));
+            hourSchemes.remove(jList2.getSelectedIndex());
+            hourSchemes.add(hourScheme);
+            IO.serializeHours(hourSchemes);
+            showHours();
+        } catch(DateTimeException dte){
+            jLabelError.setText("Date is not correct");
+        }
+        
+    }//GEN-LAST:event_jButtonSave2ActionPerformed
+  
+    
     /**
      * @param args the command line arguments
      */
@@ -404,13 +838,21 @@ public class ToDoJFrame extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButtonSave;
+    private javax.swing.JButton jButtonSave1;
+    private javax.swing.JButton jButtonSave2;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
+    private javax.swing.JLabel jLabelError;
     private javax.swing.JList<String> jList1;
     private javax.swing.JList<String> jList2;
     private javax.swing.JMenu jMenu1;
@@ -419,6 +861,7 @@ public class ToDoJFrame extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSpinner jSpinner1;
@@ -427,10 +870,14 @@ public class ToDoJFrame extends javax.swing.JFrame {
     private javax.swing.JSpinner jSpinner4;
     private javax.swing.JSpinner jSpinner5;
     private javax.swing.JSpinner jSpinner6;
+    private javax.swing.JSpinner jSpinner7;
+    private javax.swing.JSpinner jSpinner8;
+    private javax.swing.JSpinner jSpinner9;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField3;
-    private javax.swing.JTextField jTextField4;
+    private javax.swing.JTextField jTextField5;
+    private javax.swing.JTextField jTextField6;
+    private javax.swing.JTextField jTextField7;
     // End of variables declaration//GEN-END:variables
 }

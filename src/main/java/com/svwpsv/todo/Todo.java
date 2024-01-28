@@ -4,13 +4,14 @@
  */
 package com.svwpsv.todo;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
 /**
  *
  * @author Eigenaar
  */
-public class Todo {
+public class Todo implements Serializable {
     private String id;
     private String name;
     private String description;
@@ -47,7 +48,5 @@ public class Todo {
     public void setDate(LocalDate date) {
         this.date = date;
     }
-    
-    
     
 }
