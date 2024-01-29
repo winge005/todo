@@ -5,12 +5,18 @@
 package com.svwpsv.todo;
 
 import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.io.IOException;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
@@ -60,6 +66,14 @@ public class ToDoJFrame extends javax.swing.JFrame {
             hourSchemes = new ArrayList<>();
         }
         
+        String note;
+        try {
+            note = IO.deSerializeNote();
+            jTextArea1.setText(note);
+        } catch(IOException ie){
+            jTextArea1.setText("");
+        }
+       
         showTodos();
         showHours();
     }
@@ -119,15 +133,23 @@ public class ToDoJFrame extends javax.swing.JFrame {
         jSpinner6 = new javax.swing.JSpinner();
         jLabel14 = new javax.swing.JLabel();
         jButtonSave2 = new javax.swing.JButton();
+        jPanel5 = new javax.swing.JPanel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        jTextArea1 = new javax.swing.JTextArea();
         jLabelError = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
+        jMenuItem1 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
+        jMenuItem2 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("ToDO (SvW)");
+        setResizable(false);
 
         jTabbedPane1.setAutoscrolls(true);
+        jTabbedPane1.setFocusable(false);
+        jTabbedPane1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
@@ -464,14 +486,60 @@ public class ToDoJFrame extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Hours", jPanel3);
 
+        jTextArea1.setColumns(20);
+        jTextArea1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jTextArea1.setRows(5);
+        jTextArea1.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                jTextArea1FocusLost(evt);
+            }
+        });
+        jScrollPane3.setViewportView(jTextArea1);
+
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 508, Short.MAX_VALUE)
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addGap(29, 29, 29)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 379, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(24, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("Note", jPanel5);
+
+        jLabelError.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         jLabelError.setText("jLabel5");
 
         jMenuBar1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         jMenu1.setText("File");
+
+        jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.ALT_DOWN_MASK));
+        jMenuItem1.setText("Exit");
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem1);
+
         jMenuBar1.add(jMenu1);
 
-        jMenu2.setText("Edit");
+        jMenu2.setText("Report");
+
+        jMenuItem2.setText("HourList");
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItem2);
+
         jMenuBar1.add(jMenu2);
 
         setJMenuBar(jMenuBar1);
@@ -483,14 +551,14 @@ public class ToDoJFrame extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addGap(65, 65, 65)
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 508, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(87, Short.MAX_VALUE))
+                .addContainerGap(82, Short.MAX_VALUE))
             .addComponent(jLabelError, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 467, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jLabelError))
         );
 
@@ -520,6 +588,7 @@ public class ToDoJFrame extends javax.swing.JFrame {
             dlm.add(dlm.getSize(), toStringDate(t.getDate()) + " - " + t.getName());
         });
         jLabelError.setText("");
+        hideNoteEditControls(false);
     }
     
     private void showHours() {
@@ -532,6 +601,18 @@ public class ToDoJFrame extends javax.swing.JFrame {
             dlm.add(dlm.getSize(), toStringDate(t.getDate()) + " - N:" + t.getNormalHours() + " Low:" + t.getLowHours() + " High:" + t.getHighHours());
         });
         jLabelError.setText("");
+    }
+    
+    private void hideNoteEditControls(boolean value) {
+        jLabel8.setVisible(value);
+        jLabel9.setVisible(value);		
+        jLabel10.setVisible(value);		
+        
+        jTextField5.setVisible(value);
+        jTextField6.setVisible(value);
+        jTextField7.setVisible(value);
+        
+        jButtonSave1.setVisible(value);
     }
     
     private void jButtonSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSaveActionPerformed
@@ -587,6 +668,7 @@ public class ToDoJFrame extends javax.swing.JFrame {
     private void jList1ValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_jList1ValueChanged
                 // TODO add your handling code here:
                 if (jList1.getSelectedIndex() != -1){
+                    hideNoteEditControls(true);
                     Todo selected = todos.get(jList1.getSelectedIndex());
                     jTextField5.setText(selected.getName());
                     jTextField6.setText(selected.getDescription());
@@ -791,6 +873,7 @@ public class ToDoJFrame extends javax.swing.JFrame {
             hourScheme.setHighHours(Integer.parseInt(jSpinner8.getValue().toString()));
             hourSchemes.remove(jList2.getSelectedIndex());
             hourSchemes.add(hourScheme);
+            
             IO.serializeHours(hourSchemes);
             showHours();
         } catch(DateTimeException dte){
@@ -798,6 +881,34 @@ public class ToDoJFrame extends javax.swing.JFrame {
         }
         
     }//GEN-LAST:event_jButtonSave2ActionPerformed
+
+    private void jTextArea1FocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_jTextArea1FocusLost
+        try {
+            IO.serializeNote(jTextArea1.getText());
+        } catch (IOException ex) {
+            Logger.getLogger(ToDoJFrame.class.getName()).log(Level.SEVERE, null, ex);
+            jLabelError.setText("Serializing Note failed!");
+        }
+    }//GEN-LAST:event_jTextArea1FocusLost
+
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+        System.exit(0);
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
+
+    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+        Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
+        StringBuilder sb = new StringBuilder();
+        sb.append("Date      \tN\tL\tH\n");
+        sb.append("------------------------------\n");
+        hourSchemes.forEach(hs ->{
+            sb.append(hs.getDate() + "\t" + hs.getNormalHours() + "\t" + hs.getLowHours() + "\t" + hs.getHighHours());
+            sb.append("\n");
+        }
+        );
+        
+        StringSelection strse1 = new StringSelection(sb.toString());
+        clip.setContents(strse1, strse1);
+    }//GEN-LAST:event_jMenuItem2ActionPerformed
   
     
     /**
@@ -858,12 +969,16 @@ public class ToDoJFrame extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSpinner jSpinner1;
     private javax.swing.JSpinner jSpinner2;
     private javax.swing.JSpinner jSpinner3;
@@ -874,6 +989,7 @@ public class ToDoJFrame extends javax.swing.JFrame {
     private javax.swing.JSpinner jSpinner8;
     private javax.swing.JSpinner jSpinner9;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
     private javax.swing.JTextField jTextField5;

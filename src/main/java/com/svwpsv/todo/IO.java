@@ -10,6 +10,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -17,6 +19,7 @@ import java.util.List;
  * @author Eigenaar
  */
 public class IO {
+   
     public static void serializeTodos(final List<Todo> todos) {
         try
         {   
@@ -73,5 +76,13 @@ public class IO {
         }
         
         return hourSchemes;
+    }
+    
+    public static void serializeNote(final String text) throws IOException {
+           Files.write(Paths.get(new File(System.getProperty("user.dir")) + "\\note.txt"), text.getBytes());
+    }
+    
+    public static String deSerializeNote() throws IOException {
+        return Files.readString(Paths.get(System.getProperty("user.dir") + "\\note.txt"));
     }
 }
